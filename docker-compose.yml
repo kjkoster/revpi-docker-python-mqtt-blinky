@@ -1,0 +1,30 @@
+version: "3.6"
+
+services:
+  mosquitto:
+    image: eclipse-mosquitto
+    ports:
+      - ${MQTT_PORT}:${MQTT_PORT}
+    volumes:
+      - ./mosquitto/config:/mosquitto/config:ro
+      - ./mosquitto:/mosquitto/data:rw
+    user: "1000:1000"
+    restart: unless-stopped
+    logging: &logging
+      driver: "json-file"
+      options:
+        max-file: "3"
+        max-size: "50m"
+
+  blinky:
+    build: blinky
+    depends_on:
+      - mosquitto
+    environment:
+      MQTT_HOST: ${MQTT_HOST}
+      MQTT_PORT: ${MQTT_PORT}
+      MQTT_USER: ${MQTT_USER}
+      MQTT_PASS: ${MQTT_PASS}
+    restart: unless-stopped
+    logging: *logging
+
